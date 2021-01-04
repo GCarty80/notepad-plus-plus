@@ -1132,10 +1132,10 @@ struct FindHistory final
 
 	bool _isSearch2ButtonsMode = false;
 
-	int _nbMaxFindHistoryPath    = 10;
-	int _nbMaxFindHistoryFilter  = 10;
-	int _nbMaxFindHistoryFind    = 10;
-	int _nbMaxFindHistoryReplace = 10;
+	int _nbMaxFindHistoryPath           = 10;
+	int _nbMaxFindHistoryFilter         = 10;
+	int _nbMaxFindHistoryFind           = 10;
+	int _nbMaxFindHistoryReplace        = 10;
 
 	std::vector<generic_string> _findHistoryPaths;
 	std::vector<generic_string> _findHistoryFilters;
@@ -1150,6 +1150,7 @@ struct FindHistory final
 
 	bool _isFifRecuisive = true;
 	bool _isFifInHiddenFolder = false;
+	bool _isFifSkippingSymlinks = false;
     bool _isFifProjectPanel_1 = false;
     bool _isFifProjectPanel_2 = false;
     bool _isFifProjectPanel_3 = false;

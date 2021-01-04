@@ -1502,7 +1502,7 @@ void Notepad_plus::removeDuplicateLines()
 	_findReplaceDlg.processAll(ProcessReplaceAll, &env, isEntireDoc);
 }
 
-void Notepad_plus::getMatchedFileNames(const TCHAR *dir, size_t level, const vector<generic_string> & patterns, vector<generic_string> & fileNames, bool isRecursive, bool isInHiddenDir)
+void Notepad_plus::getMatchedFileNames(const TCHAR *dir, size_t level, const vector<generic_string> & patterns, vector<generic_string> & fileNames, bool isRecursive, bool isInHiddenDir, bool followSymlinks)
 {
 	level++;
 	generic_string dirFilter(dir);
@@ -1516,7 +1516,11 @@ void Notepad_plus::getMatchedFileNames(const TCHAR *dir, size_t level, const vec
 
 		if (foundData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 		{
-			if (!isInHiddenDir && (foundData.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN))
+			if (!followSymlinks && (foundData.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT))
+			{
+				// do nothing
+			}
+			else if (!isInHiddenDir && (foundData.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN))
 			{
 				// do nothing
 			}
@@ -1528,7 +1532,7 @@ void Notepad_plus::getMatchedFileNames(const TCHAR *dir, size_t level, const vec
 					generic_string pathDir(dir);
 					pathDir += foundData.cFileName;
 					pathDir += TEXT("\\");
-					getMatchedFileNames(pathDir.c_str(), level, patterns, fileNames, isRecursive, isInHiddenDir);
+					getMatchedFileNames(pathDir.c_str(), level, patterns, fileNames, isRecursive, isInHiddenDir, followSymlinks);
 				}
 			}
 		}
@@ -1546,7 +1550,11 @@ void Notepad_plus::getMatchedFileNames(const TCHAR *dir, size_t level, const vec
 	{
 		if (foundData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 		{
-			if (!isInHiddenDir && (foundData.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN))
+			if (!followSymlinks && (foundData.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT))
+			{
+				// do nothing
+			}
+			else if (!isInHiddenDir && (foundData.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN))
 			{
 				// do nothing
 			}
@@ -1558,7 +1566,7 @@ void Notepad_plus::getMatchedFileNames(const TCHAR *dir, size_t level, const vec
 					generic_string pathDir(dir);
 					pathDir += foundData.cFileName;
 					pathDir += TEXT("\\");
-					getMatchedFileNames(pathDir.c_str(), level, patterns, fileNames, isRecursive, isInHiddenDir);
+					getMatchedFileNames(pathDir.c_str(), level, patterns, fileNames, isRecursive, isInHiddenDir, followSymlinks);
 				}
 			}
 		}
@@ -1588,7 +1596,8 @@ bool Notepad_plus::createFilelistForFiles(vector<generic_string> & fileNames)
 
 	bool isRecursive = _findReplaceDlg.isRecursive();
 	bool isInHiddenDir = _findReplaceDlg.isInHiddenDir();
-	getMatchedFileNames(dir2Search, 0, patterns2Match, fileNames, isRecursive, isInHiddenDir);
+	bool followSymlinks = _findReplaceDlg.isFollowingSymlinks();
+	getMatchedFileNames(dir2Search, 0, patterns2Match, fileNames, isRecursive, isInHiddenDir, followSymlinks);
 	return true;
 }
 

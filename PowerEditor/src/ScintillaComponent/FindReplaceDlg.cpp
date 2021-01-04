@@ -355,6 +355,7 @@ void FindReplaceDlg::fillFindHistory()
 	::SendDlgItemMessage(_hSelf, IDD_FINDINFILES_INHIDDENDIR_CHECK, BM_SETCHECK, findHistory._isFifInHiddenFolder, 0);
 	::SendDlgItemMessage(_hSelf, IDD_FINDINFILES_RECURSIVE_CHECK, BM_SETCHECK, findHistory._isFifRecuisive, 0);
 	::SendDlgItemMessage(_hSelf, IDD_FINDINFILES_FOLDERFOLLOWSDOC_CHECK, BM_SETCHECK, findHistory._isFolderFollowDoc, 0);
+	::SendDlgItemMessage(_hSelf, IDD_FINDINFILES_NOSYMLINK_CHECK, BM_SETCHECK, findHistory._isFifSkippingSymlinks, 0);
 
 	::SendDlgItemMessage(_hSelf, IDD_FINDINFILES_PROJECT1_CHECK, BM_SETCHECK, findHistory._isFifProjectPanel_1, 0);
 	::SendDlgItemMessage(_hSelf, IDD_FINDINFILES_PROJECT2_CHECK, BM_SETCHECK, findHistory._isFifProjectPanel_2, 0);
@@ -444,10 +445,10 @@ void FindReplaceDlg::saveFindHistory()
 	if (! isCreated()) return;
 	FindHistory& findHistory = (NppParameters::getInstance()).getFindHistory();
 
-	saveComboHistory(IDD_FINDINFILES_DIR_COMBO, findHistory._nbMaxFindHistoryPath, findHistory._findHistoryPaths, false);
-	saveComboHistory(IDD_FINDINFILES_FILTERS_COMBO, findHistory._nbMaxFindHistoryFilter, findHistory._findHistoryFilters, true);
-	saveComboHistory(IDFINDWHAT,                    findHistory._nbMaxFindHistoryFind, findHistory._findHistoryFinds, false);
-	saveComboHistory(IDREPLACEWITH,                 findHistory._nbMaxFindHistoryReplace, findHistory._findHistoryReplaces, true);
+	saveComboHistory(IDD_FINDINFILES_DIR_COMBO,         findHistory._nbMaxFindHistoryPath, findHistory._findHistoryPaths, false);
+	saveComboHistory(IDD_FINDINFILES_FILTERS_COMBO,     findHistory._nbMaxFindHistoryFilter, findHistory._findHistoryFilters, true);
+	saveComboHistory(IDFINDWHAT,                        findHistory._nbMaxFindHistoryFind, findHistory._findHistoryFinds, false);
+	saveComboHistory(IDREPLACEWITH,                     findHistory._nbMaxFindHistoryReplace, findHistory._findHistoryReplaces, true);
 }
 
 int FindReplaceDlg::saveComboHistory(int id, int maxcount, vector<generic_string> & strings, bool saveEmpty)
@@ -1106,7 +1107,7 @@ void FindReplaceDlg::resizeDialogElements(LONG newWidth)
 		IDD_FINDINFILES_FOLDERFOLLOWSDOC_CHECK,IDD_FINDINFILES_RECURSIVE_CHECK, IDD_FINDINFILES_INHIDDENDIR_CHECK,
 		IDD_FINDINFILES_PROJECT1_CHECK, IDD_FINDINFILES_PROJECT2_CHECK, IDD_FINDINFILES_PROJECT3_CHECK,
 		IDC_TRANSPARENT_GRPBOX, IDC_TRANSPARENT_CHECK, IDC_TRANSPARENT_LOSSFOCUS_RADIO, IDC_TRANSPARENT_ALWAYS_RADIO,
-		IDC_PERCENTAGE_SLIDER , IDC_REPLACEINSELECTION , IDC_IN_SELECTION_CHECK,
+		IDC_PERCENTAGE_SLIDER , IDC_REPLACEINSELECTION , IDC_IN_SELECTION_CHECK, IDD_FINDINFILES_NOSYMLINK_CHECK,
 
 		IDD_FINDINFILES_BROWSE_BUTTON, IDCMARKALL, IDC_CLEAR_ALL, IDCCOUNTALL, IDC_FINDALL_OPENEDFILES, IDC_FINDALL_CURRENTFILE,
 		IDREPLACE, IDREPLACEALL, IDD_FINDREPLACE_SWAP_BUTTON, IDC_REPLACE_OPENEDFILES, IDD_FINDINFILES_FIND_BUTTON, IDD_FINDINFILES_REPLACEINFILES, IDOK, IDCANCEL,
@@ -2121,6 +2122,14 @@ intptr_t CALLBACK FindReplaceDlg::run_dlgProc(UINT message, WPARAM wParam, LPARA
 				}
 				return TRUE;
 
+				case IDD_FINDINFILES_NOSYMLINK_CHECK:
+				{
+					if (_currentStatus == FINDINFILES_DLG)
+						findHistory._isFifSkippingSymlinks = _options._noFollowSymlinks = isCheckedOrNot(IDD_FINDINFILES_NOSYMLINK_CHECK);
+
+				}
+				return TRUE;
+				
 				case IDD_FINDINFILES_PROJECT1_CHECK:
 				case IDD_FINDINFILES_PROJECT2_CHECK:
 				case IDD_FINDINFILES_PROJECT3_CHECK:
@@ -3374,6 +3383,7 @@ void FindReplaceDlg::enableFindInFilesControls(bool isEnable, bool projectPanels
 	showFindDlgItem(IDD_FINDINFILES_FIND_BUTTON, isEnable);
 	showFindDlgItem(IDD_FINDINFILES_RECURSIVE_CHECK, isEnable && (!projectPanels));
 	showFindDlgItem(IDD_FINDINFILES_INHIDDENDIR_CHECK, isEnable && (!projectPanels));
+	showFindDlgItem(IDD_FINDINFILES_NOSYMLINK_CHECK, isEnable && (!projectPanels));
 	showFindDlgItem(IDD_FINDINFILES_PROJECT1_CHECK, isEnable && projectPanels);
 	showFindDlgItem(IDD_FINDINFILES_PROJECT2_CHECK, isEnable && projectPanels);
 	showFindDlgItem(IDD_FINDINFILES_PROJECT3_CHECK, isEnable && projectPanels);
@@ -3422,6 +3432,7 @@ void FindReplaceDlg::saveInMacro(size_t cmd, int cmdType)
 		::SendMessage(_hParent, WM_FRSAVE_STR, IDD_FINDINFILES_FILTERS_COMBO, reinterpret_cast<LPARAM>(_options._filters.c_str()));
 		booleans |= _options._isRecursive?IDF_FINDINFILES_RECURSIVE_CHECK:0;
 		booleans |= _options._isInHiddenDir?IDF_FINDINFILES_INHIDDENDIR_CHECK:0;
+		booleans |= _options._noFollowSymlinks?IDF_FINDINFILES_NOSYMLINK_CHECK:0;
 	}
 	if (cmdType & FR_OP_FIP)
 	{
@@ -3536,6 +3547,7 @@ void FindReplaceDlg::execSavedCommand(int cmd, uptr_t intValue, const generic_st
 				_env->_isMatchCase = ((intValue & IDF_MATCHCASE) > 0);
 				_env->_isRecursive = ((intValue & IDF_FINDINFILES_RECURSIVE_CHECK) > 0);
 				_env->_isInHiddenDir = ((intValue & IDF_FINDINFILES_INHIDDENDIR_CHECK) > 0);
+				_env->_noFollowSymlinks = ((intValue & IDF_FINDINFILES_NOSYMLINK_CHECK) > 0);
 				_env->_isProjectPanel_1 = ((intValue & IDF_FINDINFILES_PROJECT1_CHECK) > 0);
 				_env->_isProjectPanel_2 = ((intValue & IDF_FINDINFILES_PROJECT2_CHECK) > 0);
 				_env->_isProjectPanel_3 = ((intValue & IDF_FINDINFILES_PROJECT3_CHECK) > 0);
@@ -3923,6 +3935,7 @@ void FindReplaceDlg::initOptionsFromDlg()
 
 	_options._isRecursive = isCheckedOrNot(IDD_FINDINFILES_RECURSIVE_CHECK);
 	_options._isInHiddenDir = isCheckedOrNot(IDD_FINDINFILES_INHIDDENDIR_CHECK);
+	_options._noFollowSymlinks = isCheckedOrNot(IDD_FINDINFILES_NOSYMLINK_CHECK);
 	_options._isProjectPanel_1 =  isCheckedOrNot(IDD_FINDINFILES_PROJECT1_CHECK);
 	_options._isProjectPanel_2 =  isCheckedOrNot(IDD_FINDINFILES_PROJECT2_CHECK);
 	_options._isProjectPanel_3 =  isCheckedOrNot(IDD_FINDINFILES_PROJECT3_CHECK);

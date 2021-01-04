@@ -74,6 +74,7 @@ struct FindOption
 	generic_string _directory;
 	bool _isRecursive = true;
 	bool _isInHiddenDir = false;
+	bool _noFollowSymlinks = false;
 	bool _isProjectPanel_1 = false;
 	bool _isProjectPanel_2 = false;
 	bool _isProjectPanel_3 = false;
@@ -305,6 +306,7 @@ public :
 	const FindOption & getCurrentOptions() const {return *_env;};
 	bool isRecursive() const { return _env->_isRecursive; };
 	bool isInHiddenDir() const { return _env->_isInHiddenDir; };
+	bool isFollowingSymlinks() const { return !_env->_noFollowSymlinks; };
 	bool isProjectPanel_1() const { return _env->_isProjectPanel_1; };
 	bool isProjectPanel_2() const { return _env->_isProjectPanel_2; };
 	bool isProjectPanel_3() const { return _env->_isProjectPanel_3; };
