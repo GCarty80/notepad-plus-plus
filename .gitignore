@@ -73,11 +73,7 @@ PowerEditor/bin/functionList.xml
 PowerEditor/bin/shortcuts.xml
 PowerEditor/bin/backup/
 PowerEditor/bin/localization/
-PowerEditor/bin/plugins/
-PowerEditor/bin/updater/
 PowerEditor/bin/functionList/
-PowerEditor/bin64/
-PowerEditor/binarm64/
 PowerEditor/bin/themes/
 PowerEditor/installer/bin/wingup/
 PowerEditor/installer/build/
@@ -164,3 +160,6 @@ PowerEditor/src/MISC/md5/RCa06792
 *.db
 *.sln
 *.opendb
+/PowerEditor/bin64/*.exp
+/PowerEditor/bin64/*.lib
+/PowerEditor/bin64/*.xml

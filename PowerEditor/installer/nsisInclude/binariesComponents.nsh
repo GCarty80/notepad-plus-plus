@@ -91,8 +91,6 @@ ${MementoSection} "Auto-Updater" AutoUpdater
 	File "..\bin\updater\README.md"
 	File "..\bin\updater\updater.ico"
 !endif
-	SetOutPath "$PLUGINSDIR\gupLocalization"
-	File "..\bin\updater\translations\"
 ${MementoSectionEnd}
 
 ${MementoSection} "Plugins Admin" PluginsAdmin
